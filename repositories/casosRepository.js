@@ -10,7 +10,7 @@ const casos = [
 ]
 
 function findAll() {
-    return casos
+    return casos;
 }
 
 function findById(id){
