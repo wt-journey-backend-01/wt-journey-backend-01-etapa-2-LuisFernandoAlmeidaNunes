@@ -64,9 +64,9 @@ function editProperties(id, dataForPatch){
     
     const {nome, dataDeIncorporacao, cargo} = dataForPatch;
     
-    if ( nome !== undefined) agentes[indexAgente].nome = nome;
-    if ( dataDeIncorporacao !== undefined) agentes[indexAgente].dataDeIncorporacao = dataDeIncorporacao;
-    if ( cargo !== undefined) agentes[indexAgente].cargo = cargo;
+    if ( nome !== undefined && nome !== "") agentes[indexAgente].nome = nome;
+    if ( dataDeIncorporacao !== undefined && dataDeIncorporacao !== "") agentes[indexAgente].dataDeIncorporacao = dataDeIncorporacao;
+    if ( cargo !== undefined && cargo !== "") agentes[indexAgente].cargo = cargo;
 
     return agentes[indexAgente]
 
