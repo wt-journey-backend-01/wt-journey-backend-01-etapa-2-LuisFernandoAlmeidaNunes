@@ -34,7 +34,7 @@ function create(dataAgente){
     agentes.push(agente);
 
     if (agentes.length > len){
-        return agentes;
+        return agente;
     }
 
     return false;
@@ -78,7 +78,7 @@ function deleteById(id) {
   if (index !== -1) {
     agente = agentes.splice(index, 1);
     return agente;
-}
+    }
 
   return false;
 }

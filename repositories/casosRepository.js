@@ -26,11 +26,11 @@ function findByAgente(id){
     });
 }
 
-function create(dataCasos){
+function create(dataCaso){
 
     const len = casos.length;
 
-    const {titulo, descricao, status, agente_id } = dataCasos;
+    const {titulo, descricao, status, agente_id } = dataCaso;
     
     if ( titulo === undefined ||  descricao === undefined || status  === undefined || agente_id  === undefined ) return false;
 
@@ -44,7 +44,7 @@ function create(dataCasos){
     casos.push(caso);
 
     if (casos.length > len){
-        return casos;
+        return caso;
     }
 
     return false;

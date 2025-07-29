@@ -4,7 +4,7 @@ const agentesRepository = require("../repositories/agentesRepository")
 
 function getAllAgentes(req, res) {
     const agentes = agentesRepository.findAll()
-    return res.status(200).json(agentes)
+    return res.status(200).json({ agentes: agentes})
 }
 
 function getAgenteById(req, res) {
@@ -19,13 +19,13 @@ function getAgenteById(req, res) {
 
 function createAgente(req,res){
     
-    agentes = agentesRepository.create(req.body);
+    agente = agentesRepository.create(req.body);
     
-    if (agentes === false){
+    if (agente === false){
         return res.status(400).json({messsage: "Paramtros incorretos !"});
     }
     
-    return res.status(201).json({messsage: "Agente criado com sucesso !", agentes: agentes});
+    return res.status(201).json({messsage: "Agente criado com sucesso !", agente: agente});
 }
 
 function deleteAgenteById(req, res){
@@ -36,7 +36,7 @@ function deleteAgenteById(req, res){
         return res.status(400).json({messsage: "não foi possível encontrar o agente !"});
     }
 
-    return res.status(200).json({ messsage: "Agente deletado com sucesso !", deleted: deleted});
+    return res.status(204).send();
 }
 
 function editAgente(req, res) {

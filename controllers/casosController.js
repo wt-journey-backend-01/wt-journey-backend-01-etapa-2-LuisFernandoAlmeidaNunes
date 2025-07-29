@@ -4,29 +4,27 @@ const casosRepository = require("../repositories/casosRepository")
 
 function getAllCasos(req, res) {
     const casos = casosRepository.findAll()
-    return res.status(200).json(casos)
+    return res.status(200).json(casos);
 }
 
 function getCasoById(req, res) {
     const id = req.params.id;
     const caso = casosRepository.findById(id);
     if (!caso) {
-        return res.status(404)
+        return res.status(404).json({message: 'Caso não encontrado !'});
     }
     return res.status(200).json(caso);
 }
 
 function createCaso(req,res){
     
-    casos = casosRepository.create(req.body);
+    caso = casosRepository.create(req.body);
     
     if (casos === false){
         return res.status(400).json({messsage: "Paramtros incorretos !"});
     }
     
-    console.log(casos);
-    
-    return res.status(201).json({messsage: "Caso criado com sucesso !"});
+    return res.status(201).json({caso: caso});
 }
 
 function deleteCasoById(req, res){
@@ -37,7 +35,7 @@ function deleteCasoById(req, res){
         return res.status(400).json({messsage: "não foi possível encontrar o caso !"});
     }
 
-    return res.status(200).json({ messsage: "Caso deletado com sucesso !"});
+    return res.status(204).send();
 }
 
 function editCaso(req, res) {
