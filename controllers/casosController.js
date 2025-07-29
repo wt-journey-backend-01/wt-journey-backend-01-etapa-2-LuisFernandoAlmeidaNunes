@@ -20,7 +20,7 @@ function createCaso(req,res){
     
     caso = casosRepository.create(req.body);
     
-    if (casos === false){
+    if (caso === false){
         return res.status(400).json({messsage: "Paramtros incorretos !"});
     }
     
