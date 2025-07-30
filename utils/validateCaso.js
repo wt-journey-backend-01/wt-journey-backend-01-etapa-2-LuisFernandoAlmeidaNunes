@@ -13,7 +13,7 @@ const casoSchema = z.object({
 const partialCasoSchema = casoSchema.partial();
 
 const idSchema = z.object({
-    id: z.string().uuid({
+    id: z.uuidv4({
         required_error: 'Uuid é obrigatório',
         invalid_type_error: 'O id deve seguir a formatação uuid' 
     })
