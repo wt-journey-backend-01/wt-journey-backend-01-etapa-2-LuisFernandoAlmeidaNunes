@@ -1,74 +1,106 @@
 const { json } = require("express");
-const agentesRepository = require("../repositories/agentesRepository")
+const { z } = require("zod");
+const agentesRepository = require("../repositories/agentesRepository");
+const {agenteSchema, idSchema, partialAgenteSchema} = require('../utils/validateAgente');
 
-
-function getAllAgentes(req, res) {
-    const agentes = agentesRepository.findAll()
-    return res.status(200).json({ agentes: agentes})
-}
-
-function getAgenteById(req, res) {
-    const id = req.params.id;
-    console.log(id);
-    const agente = agentesRepository.findById(id);
-    if (!agente) {
-        return res.status(404)
+class ApiError extends Error {
+    constructor(message, statusCode = 500){
+        super(message);
+        this.name = 'ApiError';
+        this.statusCode = statusCode;
     }
-    return res.status(200).json({message: "Agente encontrado comsucesso !", agente: agente});
 }
 
-function createAgente(req,res){
+function getAllAgentes(req, res, next) {
+    try {
+        const agentes = agentesRepository.findAll();
+        return res.status(200).json({ agentes: agentes});
+    } catch(error) {
+        next(new ApiError(error.message, 404));
+    }
+}
+
+function getAgenteById(req, res, next) {
+    let id;
+    try {
+        ({id} = idSchema.parse(req.params));
+    const agente = agentesRepository.findById(id);    
+    return res.status(200).json({message: "Agente encontrado com sucesso !", agente: agente});
+    } catch(error) {
+        next(new ApiError(error.message, 404));
+    }
+}
+
+function createAgente(req,res, next){
+    let agenteData;
+    try {
+        agenteData = agenteSchema.parse(req.body); 
     
-    agente = agentesRepository.create(req.body);
-    
-    if (agente === false){
-        return res.status(400).json({messsage: "Paramtros incorretos !"});
+    } catch(error) {
+        return next(new ApiError(error.message, 404));
     }
-    
-    return res.status(201).json({messsage: "Agente criado com sucesso !", agente: agente});
+    try {
+        agente = agentesRepository.create(agenteData);        
+        return res.status(201).json({messsage: "Agente criado com sucesso !", agente: agente});
+    } catch(error) {
+        next(new ApiError(error.message, 400));
+    }
 }
 
-function deleteAgenteById(req, res){
-
-    deleted = agentesRepository.deleteById(req.params.id);
-    
-    if (!deleted) {
-        return res.status(400).json({messsage: "não foi possível encontrar o agente !"});
+function deleteAgenteById(req, res, next){
+    let id;
+    try {
+        ({id} = idSchema.parse(req.params));
+    } catch(error) {
+        return next(new ApiError(error.message, 404));
     }
-
-    return res.status(204).send();
+    try {
+        deleted = agentesRepository.deleteById(id);
+        return res.status(204).send();
+    } catch(error) {
+        return next(new ApiError(error.message, 404));
+    }
 }
 
-function editAgente(req, res) {
-
-    if ( !req.body.nome || !req.body.dataDeIncorporacao || !req.body.cargo ){
-        res.status(400).json({ message: "Faltam parâmetros para a edição !"});
+function editAgente(req, res, next) {
+    let id, dados;
+    try {
+        ({id} = idSchema.parse(req.params));
+    } catch(error) {
+        return next(new ApiError(error.message, 404));
     }
-
-    agente = agentesRepository.edit(req.params.id, req.body);
-
-    if(!agente){
-        return res.status(400).json({ messsage: "Paramêtros incorretos para o agente !"});
+    try {
+        dados = agenteSchema.parse(req.body);
+    } catch(error) {
+        return next(new ApiError(error.message, 400));
     }
+    try {
+        agente = agentesRepository.edit(id, dados);
 
-    return res.status(200).json({messsage: "Agente editado com sucesso !", agente: agente});
-
+        return res.status(200).json({messsage: "Agente editado com sucesso !", agente: agente});
+    } catch(error) {
+        next(new ApiError(error.message, 404));
+    }
 }
 
-function editAgenteProperty(req, res){
-
-    if (!req.body.nome && !req.body.dataDeIncorporacao && !req.body.cargo) {
-        return res.status(400).json({ message: "Nenhuma propriedade válida para atualização foi enviada." });
+function editAgenteProperty(req, res, next){
+    let id, dados;
+    try{
+        ({id} = idSchema.parse(req.params));
+    } catch(error) {
+        return next(new ApiError(error.message, 404));
     }
-
-    agente = agentesRepository.editProperties(req.params.id, req.body);
-
-    if(!agente) {
-        return res.status(400).json({messsage: "Erro na atualização do agente !"});
+    try {
+        dados = partialAgenteSchema.parse(req.body);
+    } catch(error) {
+        return next(new ApiError(error.message, 400));
     }
-
-    return res.status(200).json({messsage: "Agente atualizado com sucesso !", agente: agente});
-
+    try{
+        agente = agentesRepository.editProperties(id, dados);
+        return res.status(200).json({agente: agente});
+    } catch(error) {
+        return next(new ApiError(error.message, 404));
+    }
 }
 
 module.exports = {

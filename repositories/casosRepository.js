@@ -28,11 +28,10 @@ function findByAgente(id){
 
 function create(dataCaso){
 
+        console.log(dataCaso);
     const len = casos.length;
 
     const {titulo, descricao, status, agente_id } = dataCaso;
-    
-    if ( titulo === undefined ||  descricao === undefined || status  === undefined || agente_id  === undefined ) return false;
 
     caso = {};
     caso.id = crypto.randomUUID();
@@ -71,7 +70,7 @@ function edit(id, casoData){
 
 function editProperties(id, dataForPatch){
     
-    indexCaso = casos.findIndex(caso => caso.id === id)
+    const indexCaso = casos.findIndex(caso => caso.id === id)
     
     const {titulo, descricao, status, agente_id } = dataForPatch;
     
@@ -80,7 +79,7 @@ function editProperties(id, dataForPatch){
     if ( status !== undefined) casos[indexCaso].status = status;
     if ( agente_id !== undefined) casos[indexCaso].agente_id = agente_id;
 
-    return casos[indexCaso]
+    return casos[indexCaso];
 
 }
 

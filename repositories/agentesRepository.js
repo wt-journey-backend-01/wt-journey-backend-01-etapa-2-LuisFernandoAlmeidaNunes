@@ -22,8 +22,6 @@ function create(dataAgente){
     const len = agentes.length;
 
     const {nome, dataDeIncorporacao, cargo} = dataAgente;
-    
-    if ( nome === undefined ||  dataDeIncorporacao === undefined || cargo  === undefined) return false;
 
     agente = {};
     agente.id = crypto.randomUUID();
@@ -33,11 +31,8 @@ function create(dataAgente){
     
     agentes.push(agente);
 
-    if (agentes.length > len){
-        return agente;
-    }
+    return agente;
 
-    return false;
 }
 
 

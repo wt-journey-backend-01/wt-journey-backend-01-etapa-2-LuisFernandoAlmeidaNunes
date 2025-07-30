@@ -1,69 +1,121 @@
 const { json } = require("express");
-const casosRepository = require("../repositories/casosRepository")
+const casosRepository = require("../repositories/casosRepository");
+const {idSchema, casoSchema, partialCasoSchema} = require('../utils/validateCaso');
+const { z } = require("zod");
 
-
-function getAllCasos(req, res) {
-    const casos = casosRepository.findAll()
-    return res.status(200).json(casos);
+class ApiError extends Error {
+    constructor(message, statusCode = 500){
+        super(message);
+        this.name = 'ApiError';
+        this.statusCode = statusCode;
+    }
 }
 
-function getCasoById(req, res) {
-    const id = req.params.id;
-    const caso = casosRepository.findById(id);
-    if (!caso) {
-        return res.status(404).json({message: 'Caso não encontrado !'});
+function getAllCasos(req, res, next) {
+    try {
+        const casos = casosRepository.findAll();
+        return res.status(200).json(casos);
+    } catch(error) {
+        return next(new ApiError(error.message, 404));
     }
-    return res.status(200).json(caso);
 }
 
-function createCaso(req,res){
-    
-    caso = casosRepository.create(req.body);
-    
-    if (caso === false){
-        return res.status(400).json({messsage: "Paramtros incorretos !"});
+function getCasoById(req, res, next) {
+    let id;
+    try {
+        ({id} = idSchema.parse(req.params));
+    } catch(error) {
+        return next(new ApiError(error.message, 404));
     }
     
-    return res.status(201).json({caso: caso});
+    try {
+        const caso = casosRepository.findById(id);
+        return res.status(200).json(caso);
+    } catch(error) {
+        return next(new ApiError(error.message, 404));
+    }
 }
 
-function deleteCasoById(req, res){
-
-    deleted = casosRepository.deleteById(req.params.id);
-    
-    if (!deleted) {
-        return res.status(400).json({messsage: "não foi possível encontrar o caso !"});
+function createCaso(req, res, next){
+    let dados;
+    try {
+        dados = casoSchema.parse(req.body);
+        console.log(dados);
+    } catch(error) {
+        return next(new ApiError(error.message, 400));
     }
-
-    return res.status(204).send();
+    try {
+        const caso = casosRepository.create(dados);
+        return res.status(201).json({caso: caso});
+    } catch(error) {
+        return next(new ApiError(error.message, 404));
+    }
 }
 
-function editCaso(req, res) {
+function deleteCasoById(req, res, next){
+    let id;
+    try {
+        ({id} = idSchema.parse(req.params));
+    } catch(error) {
+        return next(new ApiError(error.message, 404));
+    }
+    
+    try {
+        deleted = casosRepository.deleteById(id);
+        return res.status(204).send();
+    } catch(error) {
+        return next(new ApiError(error.message, 404));
+    }
+}
 
-    caso = casosRepository.edit(req.params.id, req.body);
-
-    if(!caso){
-        return res.status(400).json({ messsage: "Paramêtros incorretos para o caso !"});
+function editCaso(req, res, next) {
+    let id, dados;
+    try{
+        ({id} = idSchema.parse(req.params));
+    } catch(error) {
+        return next(new ApiError(error.message, 404));
+    }
+    try {
+        dados = casoSchema.parse(req.body);
+    } catch(error) {
+        return next(new ApiError(error.message, 400));
     }
 
+    try {
+    caso = casosRepository.edit(id, dados);
     return res.status(200).json({messsage: "Caso editado com sucesso !", caso: caso});
+    }  catch(error) {
+        return next(new ApiError(error.message, 404));
+    }
 
 }
 
-function editCasoProperty(req, res){
-
-    if (!req.body.titulo && !req.body.descricao && !req.body.status && !req.body.agente_id) {
-        return res.status(400).json({ message: "Nenhuma propriedade válida para atualização foi enviada." });
+function editCasoProperty(req, res, next){
+    let id, dados;
+    
+    try {
+        ({id} = idSchema.parse(req.params));
+    } catch(error) {
+        return next(new ApiError(error.message, 404));
+    }
+    
+    try {
+        dados = partialCasoSchema.parse(req.body);
+    } catch(error) {
+        return next(new ApiError(error.message, 400));
     }
 
-    caso = casosRepository.editProperties(req.params.id, req.body);
-
-    if(!caso) {
-        return res.status(400).json({messsage: "Erro na atualização do caso !"});
+    if (Object.keys(dados).length === 0) {
+        return res.status(400).json({ message: "Nenhuma propriedade foi enviada." });
     }
+
+    try {
+    caso = casosRepository.editProperties(id, dados);
 
     return res.status(200).json({messsage: "Caso atualizado com sucesso !", caso: caso});
-
+    } catch(error) {
+        return next(new ApiError(error.message, 404));
+    }
 }
 
 module.exports = {
