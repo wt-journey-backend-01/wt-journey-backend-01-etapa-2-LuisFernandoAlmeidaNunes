@@ -25,11 +25,32 @@ function findById(id){
 
 function findByAgente(id){
     casosComAgente = casos.filter( caso => caso.agente_id === id);
-    if ( casosComAgente === undefined){
+    console.log(casosComAgente);
+    if (casosComAgente.length === 0){
         throw new Error(`Casos com id ${id} não encontrados !`);
     }
     return casosComAgente;
 }
+
+function findAberto(casos) {
+    
+    if (!Array.isArray(casos)) {
+        throw new Error("A entrada 'casos' deve ser um array.");
+    }
+    
+    return casos.filter(caso => caso.status === "aberto");
+
+}
+
+function findByWord(word){
+
+    const term = word.q.toLowerCase();
+
+    return findAll().filter( caso => caso.titulo.toLowerCase().includes(term) || 
+                                      caso.descricao.toLowerCase().includes(term));
+
+}
+
 function create(dataCaso){
 
     const len = casos.length;
@@ -95,7 +116,6 @@ function deleteById(id) {
 
     if (index !== -1) {
         casos.splice(index, 1);
-        return true;
     }
     
     throw new Error(`Id ${id} não encontrado !`);;
@@ -105,6 +125,8 @@ module.exports = {
     findAll,
     findById,
     findByAgente,
+    findAberto,
+    findByWord,
     create,
     edit,
     deleteById,

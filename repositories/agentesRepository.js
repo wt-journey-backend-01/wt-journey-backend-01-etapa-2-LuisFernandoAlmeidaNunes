@@ -16,7 +16,7 @@ function findAll(){
 
 function findById(id){
     const agente = agentes.find(agente => agente.id === id)
-    if (agente === -1 ){
+    if (!agente){
         throw new Error(`Id ${id} não encontrado !`);
     }
     return agente;
@@ -50,7 +50,7 @@ function edit(id, agenteData){
     
     agenteToEditIndex = agentes.findIndex(agente => agente.id === id);
 
-    if(agenteToEditIndex === -1) {
+    if(!agenteToEditIndex) {
         throw new Error(`Id ${id} não encontrado !`);
     }
 
@@ -67,7 +67,7 @@ function editProperties(id, dataForPatch){
     
     indexAgente = agentes.findIndex(agente => agente.id === id)
     
-    if ( indexAgente === -1){
+    if ( !indexAgente){
         throw new Error(`Id ${id} não encontrado !`);
     }
 
@@ -84,7 +84,7 @@ function editProperties(id, dataForPatch){
 function deleteById(id) {
   const index = agentes.findIndex(agente => agente.id === id);
 
-  if (index !== -1) {
+  if (!index) {
     agente = agentes.splice(index, 1);
     return agente;
     }

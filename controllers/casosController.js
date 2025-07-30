@@ -13,12 +13,94 @@ class ApiError extends Error {
 }
 
 function getAllCasos(req, res, next) {
+
+    const {agente_id, status} = req.query;
+
+    if(agente_id){
+        const validatedUuid = z.uuidv4().parse(agente_id);
+        return getCasoByAgente(validatedUuid,res,next);
+    }
+    
     try {
         const casos = casosRepository.findAll();
+
+        if(status){
+            return getCasoAberto(status, casos, res, next);
+        }
+
         return res.status(200).json(casos);
+    
     } catch(error) {
         return next(new ApiError(error.message, 404));
     }
+}
+
+function getCasosByWord(req, res, next){
+    const word = req.query;
+
+    if (!word){
+        return next(new ApiError(error.message, 400));
+    }
+
+    const casos = casosRepository.findByWord(word);
+    
+    return res.status(200).json({casos: casos});
+}
+
+function getCasoByAgente(id, res, next) {
+
+    const agenteExists = agentesRepository.findById(id);
+
+    if(!agenteExists){
+        return next(new ApiError(error.message, 404));
+    }
+
+    try {
+        const caso = casosRepository.findByAgente(id);
+        return res.status(200).json(caso);
+    } catch(error) {
+        return next(new ApiError(error.message, 404));
+    }
+}
+
+function getAgenteDataByCasoId(req, res, next){
+
+    const {caso_id} = req.params;
+    const validCaso_id = z.uuidv4().parse(caso_id);
+
+    if(!validCaso_id){
+        return next(new ApiError(error.message, 404));
+    }
+
+    try {
+        caso = casosRepository.findById(validCaso_id);
+    }  catch(error) {
+        return next(new ApiError(error.message, 404));
+    }
+
+    try {
+        agente = agentesRepository.findById(caso.agente_id);
+        return res.status(200).json({agente: agente});
+    } catch(error) {
+        return next(new ApiError(error.message, 404));
+    }
+
+}
+
+function getCasoAberto(status, casos, res, next){
+
+    if (status !== "aberto"){
+        return next(new ApiError(error.message, 400));
+    }
+
+    if (!Array.isArray(casos)) {
+        throw new Error(error.message, 400);
+    }
+
+    const casosAbertos = casosRepository.findAberto(casos);    
+
+    return res.status(200).json(casosAbertos);
+
 }
 
 function getCasoById(req, res, next) {
@@ -37,21 +119,6 @@ function getCasoById(req, res, next) {
     }
 }
 
-function getByAgente(req, res, next) {
-    let id;
-    try {
-        ({id} = idSchema.parse(req.params));
-    } catch(error) {
-        return next(new ApiError(error.message, 404));
-    }
-    
-    try {
-        const caso = casosRepository.findByAgente(id);
-        return res.status(200).json(caso);
-    } catch(error) {
-        return next(new ApiError(error.message, 404));
-    }
-}
 
 function createCaso(req, res, next){
     let dados;
@@ -82,7 +149,7 @@ function deleteCasoById(req, res, next){
     }
     
     try {
-        deleted = casosRepository.deleteById(id);
+        casosRepository.deleteById(id);
         return res.status(204).send();
     } catch(error) {
         return next(new ApiError(error.message, 404));
@@ -104,7 +171,7 @@ function editCaso(req, res, next) {
 
     try {
     caso = casosRepository.edit(id, dados);
-    return res.status(200).json({messsage: "Caso editado com sucesso !", caso: caso});
+    return res.status(200).json({message: "Caso editado com sucesso !", caso: caso});
     }  catch(error) {
         return next(new ApiError(error.message, 404));
     }
@@ -133,7 +200,7 @@ function editCasoProperty(req, res, next){
     try {
     caso = casosRepository.editProperties(id, dados);
 
-    return res.status(200).json({messsage: "Caso atualizado com sucesso !", caso: caso});
+    return res.status(200).json({message: "Caso atualizado com sucesso !", caso: caso});
     } catch(error) {
         return next(new ApiError(error.message, 404));
     }
@@ -142,7 +209,10 @@ function editCasoProperty(req, res, next){
 module.exports = {
    getAllCasos,
    getCasoById,
-   getByAgente,
+   getCasoByAgente,
+   getAgenteDataByCasoId,
+   getCasoAberto,
+   getCasosByWord,
    createCaso,
    deleteCasoById,
    editCaso,

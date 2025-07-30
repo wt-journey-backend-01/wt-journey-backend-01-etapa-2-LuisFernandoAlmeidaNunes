@@ -5,7 +5,7 @@ const casoSchema = z.object({
     descricao: z.string({ required_error: 'Descrição é obrigatória.'}).min(1, 'Descrição não pode ser vazia.'),
     status: z.enum(['aberto', 'solucionado'], {
         required_error: 'Status é obrigatório.',
-        invalid_type_error: 'Status dever ser "aberto" ou "solucionado".'
+        invalid_type_error: 'Status deve ser "aberto" ou "solucionado".'
     }),
     agente_id: z.uuid({ required_error: 'Id do agente é obrigatório.'})
 });
@@ -13,8 +13,9 @@ const casoSchema = z.object({
 const partialCasoSchema = casoSchema.partial();
 
 const idSchema = z.object({
-    id: z.uuid({
-        required_error: 'Uuid é obrigatório'
+    id: z.uuidv4({
+        required_error: 'Uuid é obrigatório',
+        invalid_type_error: 'O id deve seguir a formatação uuid' 
     })
 });
 
