@@ -14,7 +14,7 @@ const agenteSchema = z.object({
 const partialAgenteSchema = agenteSchema.partial();
 
 const idSchema = z.object({
-    id: z.uuidv4({
+    id: z.string().uuid({
         required_error: 'Uuid é obrigatório',
         invalid_type_error: 'O id vere seguir a formatação uuid' 
     })
