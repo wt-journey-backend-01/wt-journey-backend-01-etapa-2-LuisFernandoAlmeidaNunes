@@ -1,5 +1,6 @@
 const { json } = require("express");
 const casosRepository = require("../repositories/casosRepository");
+const agentesRepository = require("../repositories/agentesRepository");
 const {idSchema, casoSchema, partialCasoSchema} = require('../utils/validateCaso');
 const { z } = require("zod");
 
@@ -36,13 +37,33 @@ function getCasoById(req, res, next) {
     }
 }
 
+function getByAgente(req, res, next) {
+    let id;
+    try {
+        ({id} = idSchema.parse(req.params));
+    } catch(error) {
+        return next(new ApiError(error.message, 404));
+    }
+    
+    try {
+        const caso = casosRepository.findByAgente(id);
+        return res.status(200).json(caso);
+    } catch(error) {
+        return next(new ApiError(error.message, 404));
+    }
+}
+
 function createCaso(req, res, next){
     let dados;
     try {
         dados = casoSchema.parse(req.body);
-        console.log(dados);
     } catch(error) {
         return next(new ApiError(error.message, 400));
+    }
+    try{
+        const agenteExiste = agentesRepository.findById(dados.agente_id);
+    } catch(error) {
+        return next(new ApiError(error.message, 404));
     }
     try {
         const caso = casosRepository.create(dados);
@@ -121,6 +142,7 @@ function editCasoProperty(req, res, next){
 module.exports = {
    getAllCasos,
    getCasoById,
+   getByAgente,
    createCaso,
    deleteCasoById,
    editCaso,

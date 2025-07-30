@@ -1,3 +1,5 @@
+const crypto = require('crypto');
+
 const casos = [
     {
         id: "f5fb2ad5-22a8-4cb4-90f2-8733517a0d46",
@@ -14,21 +16,22 @@ function findAll() {
 }
 
 function findById(id){
-    return casos.find( caso => caso.id === id);
+    const caso = casos.find( caso => caso.id === id);
+    if (caso === undefined){
+        throw new Error(`Id ${id} não encontrado !`);
+    } 
+    return caso;
 }
 
 function findByAgente(id){
-    casos.forEach(caso => {
-        if (caso.agente_id === id ){
-            return caso;
-        }
-        return null;
-    });
+    casosComAgente = casos.filter( caso => caso.agente_id === id);
+    if ( casosComAgente === undefined){
+        throw new Error(`Casos com id ${id} não encontrados !`);
+    }
+    return casosComAgente;
 }
-
 function create(dataCaso){
 
-        console.log(dataCaso);
     const len = casos.length;
 
     const {titulo, descricao, status, agente_id } = dataCaso;
@@ -46,7 +49,7 @@ function create(dataCaso){
         return caso;
     }
 
-    return false;
+    throw new Error('Não foi possível criar caso !');
 }
 
 
@@ -55,7 +58,7 @@ function edit(id, casoData){
     casoToEditIndex = casos.findIndex(caso => caso.id === id);
 
     if(casoToEditIndex === -1) {
-        return false;
+        throw new Error(`Id ${id} não encontrado !`);
     }
 
     casos[casoToEditIndex].id = id;
@@ -72,6 +75,10 @@ function editProperties(id, dataForPatch){
     
     const indexCaso = casos.findIndex(caso => caso.id === id)
     
+    if( indexCaso === -1 ){
+        throw new Error(`Id ${id} não encontrado !`);
+    }
+
     const {titulo, descricao, status, agente_id } = dataForPatch;
     
     if ( titulo !== undefined) casos[indexCaso].titulo = titulo;
@@ -84,14 +91,14 @@ function editProperties(id, dataForPatch){
 }
 
 function deleteById(id) {
-  const index = casos.findIndex(caso => caso.id === id);
+    const index = casos.findIndex(caso => caso.id === id);
 
-  if (index !== -1) {
-    casos.splice(index, 1);
-    return true;
-}
-
-  return false;
+    if (index !== -1) {
+        casos.splice(index, 1);
+        return true;
+    }
+    
+    throw new Error(`Id ${id} não encontrado !`);;
 }
 
 module.exports = {

@@ -1,3 +1,5 @@
+const crypto = require('crypto');
+
 const agentes = [
     {
     "id": "401bccf5-cf9e-489d-8412-446cd169a0f1",
@@ -13,7 +15,11 @@ function findAll(){
 }
 
 function findById(id){
-    return agentes.find(agente => agente.id === id);
+    const agente = agentes.find(agente => agente.id === id)
+    if (agente === -1 ){
+        throw new Error(`Id ${id} não encontrado !`);
+    }
+    return agente;
 }
 
 
@@ -31,6 +37,10 @@ function create(dataAgente){
     
     agentes.push(agente);
 
+    if (agentes.length === len){
+        throw new Error(`Não foi possível adicionar agente !`);
+    }
+    
     return agente;
 
 }
@@ -41,7 +51,7 @@ function edit(id, agenteData){
     agenteToEditIndex = agentes.findIndex(agente => agente.id === id);
 
     if(agenteToEditIndex === -1) {
-        return false;
+        throw new Error(`Id ${id} não encontrado !`);
     }
 
     agentes[agenteToEditIndex].id = id;
@@ -57,6 +67,10 @@ function editProperties(id, dataForPatch){
     
     indexAgente = agentes.findIndex(agente => agente.id === id)
     
+    if ( indexAgente === -1){
+        throw new Error(`Id ${id} não encontrado !`);
+    }
+
     const {nome, dataDeIncorporacao, cargo} = dataForPatch;
     
     if ( nome !== undefined && nome !== "") agentes[indexAgente].nome = nome;
@@ -74,8 +88,8 @@ function deleteById(id) {
     agente = agentes.splice(index, 1);
     return agente;
     }
-
-  return false;
+    
+    throw new Error(`Id ${id} não encontrado !`);
 }
 
 module.exports = {

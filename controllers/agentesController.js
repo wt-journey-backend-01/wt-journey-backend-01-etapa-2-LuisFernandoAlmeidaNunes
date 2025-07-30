@@ -37,13 +37,13 @@ function createAgente(req,res, next){
         agenteData = agenteSchema.parse(req.body); 
     
     } catch(error) {
-        return next(new ApiError(error.message, 404));
+        return next(new ApiError(error.message, 400));
     }
     try {
         agente = agentesRepository.create(agenteData);        
-        return res.status(201).json({messsage: "Agente criado com sucesso !", agente: agente});
+        return res.status(201).json({message: "Agente criado com sucesso !", agente: agente});
     } catch(error) {
-        next(new ApiError(error.message, 400));
+        next(new ApiError(error.message, 404));
     }
 }
 
@@ -77,7 +77,7 @@ function editAgente(req, res, next) {
     try {
         agente = agentesRepository.edit(id, dados);
 
-        return res.status(200).json({messsage: "Agente editado com sucesso !", agente: agente});
+        return res.status(200).json({message: "Agente editado com sucesso !", agente: agente});
     } catch(error) {
         next(new ApiError(error.message, 404));
     }
