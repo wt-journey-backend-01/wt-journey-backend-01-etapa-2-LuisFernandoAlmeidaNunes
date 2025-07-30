@@ -32,7 +32,7 @@ function getAgenteById(req, res, next) {
 }
 
 function createAgente(req,res, next){
-    let agenteData;
+    let agenteData, agente;
     try {
         agenteData = agenteSchema.parse(req.body); 
     

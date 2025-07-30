@@ -42,9 +42,9 @@ function findAberto(casos) {
 
 }
 
-function findByWord(word){
+function findByWord(q){
 
-    const term = word.q.toLowerCase();
+    const term = q.toLowerCase();
 
     return findAll().filter( caso => caso.titulo.toLowerCase().includes(term) || 
                                       caso.descricao.toLowerCase().includes(term));
@@ -116,6 +116,7 @@ function deleteById(id) {
 
     if (index !== -1) {
         casos.splice(index, 1);
+        return;
     }
     
     throw new Error(`Id ${id} não encontrado !`);;

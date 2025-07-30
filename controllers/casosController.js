@@ -17,8 +17,9 @@ function getAllCasos(req, res, next) {
     const {agente_id, status} = req.query;
 
     if(agente_id){
-        const validatedUuid = z.uuidv4().parse(agente_id);
-        return getCasoByAgente(validatedUuid,res,next);
+
+        const validatedUuid = idSchema.parse({id: agente_id});
+        return getCasoByAgente(validatedUuid.id,res,next);
     }
     
     try {
@@ -36,13 +37,15 @@ function getAllCasos(req, res, next) {
 }
 
 function getCasosByWord(req, res, next){
-    const word = req.query;
+    const {q} = req.query;
 
-    if (!word){
-        return next(new ApiError(error.message, 400));
+    console.log(q);
+    
+    if (!q) {
+        return next(new ApiError("Parâmetro 'q' é obrigatório para busca.", 400));
     }
 
-    const casos = casosRepository.findByWord(word);
+    const casos = casosRepository.findByWord(q);
     
     return res.status(200).json({casos: casos});
 }
@@ -66,14 +69,16 @@ function getCasoByAgente(id, res, next) {
 function getAgenteDataByCasoId(req, res, next){
 
     const {caso_id} = req.params;
-    const validCaso_id = z.uuidv4().parse(caso_id);
+
+    console.log(caso_id);
+    const validCaso_id = idSchema.parse({id: caso_id});
 
     if(!validCaso_id){
         return next(new ApiError(error.message, 404));
     }
 
     try {
-        caso = casosRepository.findById(validCaso_id);
+        caso = casosRepository.findById(validCaso_id.id);
     }  catch(error) {
         return next(new ApiError(error.message, 404));
     }
@@ -90,7 +95,7 @@ function getAgenteDataByCasoId(req, res, next){
 function getCasoAberto(status, casos, res, next){
 
     if (status !== "aberto"){
-        return next(new ApiError(error.message, 400));
+        return next(new ApiError('O filtro deve ocorrer por "Aberto"', 400));
     }
 
     if (!Array.isArray(casos)) {
