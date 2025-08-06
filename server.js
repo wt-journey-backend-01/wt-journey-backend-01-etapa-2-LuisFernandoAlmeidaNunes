@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(agentesRouter);
 app.use(casosRouter);
 // app.use("api-docs", swaggerUi.serve, swaggerUi.setup(require("./swagger.json")));
-app.use(errorHandler);
+app.use(errorHandler.errorHandler);
 
 app.listen(PORT, () => {
     console.log(`Servidor do Departamento de Polícia rodando em localhost:${PORT}`);

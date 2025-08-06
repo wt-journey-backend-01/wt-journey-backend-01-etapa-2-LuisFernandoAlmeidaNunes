@@ -41,10 +41,11 @@ const errorHandler = ( err, req, res, next ) => {
     });
 };
 
-module.exports = 
-errorHandler,
-casoSchema,
-agenteSchema,
-idSchema,
-partialAgenteSchema,
-partialCasoSchema;
+module.exports = {
+    errorHandler,
+    casoSchema,
+    agenteSchema,
+    idSchema,
+    partialAgenteSchema,
+    partialCasoSchema
+}

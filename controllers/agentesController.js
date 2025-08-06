@@ -1,7 +1,7 @@
 const { json } = require("express");
 const { z } = require("zod");
 const agentesRepository = require("../repositories/agentesRepository");
-const {agenteSchema, idSchema, partialAgenteSchema} = require('../utils/validateAgente');
+const errorHandler = require("../utils/errorHandler");
 
 class ApiError extends Error {
     constructor(message, statusCode = 500){
@@ -23,7 +23,7 @@ function getAllAgentes(req, res, next) {
 function getAgenteById(req, res, next) {
     let id;
     try {
-        ({id} = idSchema.parse(req.params));
+        ({id} = errorHandler.idSchema.parse(req.params));
     } catch(error) {
         return next(new ApiError(error.message, 400)); // erro de validação
     }
@@ -39,7 +39,7 @@ function getAgenteById(req, res, next) {
 function createAgente(req,res, next){
     let agenteData;
     try {
-        agenteData = agenteSchema.parse(req.body); 
+        agenteData = errorHandler.agenteSchema.parse(req.body); 
     
     } catch(error) {
         return next(new ApiError(error.message, 400));
@@ -55,7 +55,7 @@ function createAgente(req,res, next){
 function deleteAgenteById(req, res, next){
     let id;
     try {
-        ({id} = idSchema.parse(req.params));
+        ({id} =errorHandler.agenteSchema.parse(req.params));
     } catch(error) {
         return next(new ApiError(error.message, 404));
     }
@@ -70,12 +70,12 @@ function deleteAgenteById(req, res, next){
 function editAgente(req, res, next) {
     let id, dados;
     try {
-        ({id} = idSchema.parse(req.params));
+        ({id} =errorHandler.agenteSchema.parse(req.params));
     } catch(error) {
         return next(new ApiError(error.message, 404));
     }
     try {
-        dados = agenteSchema.parse(req.body);
+        dados = errorHandler.agenteSchema.parse(req.body);
     } catch(error) {
         return next(new ApiError(error.message, 400));
     }
@@ -91,12 +91,12 @@ function editAgente(req, res, next) {
 function editAgenteProperty(req, res, next){
     let id, dados;
     try{
-        ({id} = idSchema.parse(req.params));
+        ({id} =errorHandler.agenteSchema.parse(req.params));
     } catch(error) {
         return next(new ApiError(error.message, 404));
     }
     try {
-        dados = partialAgenteSchema.parse(req.body);
+        dados = errorHandler.partialAgenteSchema.parse(req.body);
     } catch(error) {
         return next(new ApiError(error.message, 400));
     }

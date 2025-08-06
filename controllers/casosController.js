@@ -1,8 +1,7 @@
 const { json } = require("express");
 const casosRepository = require("../repositories/casosRepository");
 const agentesRepository = require("../repositories/agentesRepository");
-const {idSchema, casoSchema, partialCasoSchema} = require('../utils/validateCaso');
-const { z } = require("zod");
+const errorHandler = require("../utils/errorHandler");
 
 class ApiError extends Error {
     constructor(message, statusCode = 500){
@@ -20,7 +19,7 @@ function getAllCasos(req, res, next) {
         let casos = casosRepository.findAll();
 
         if(agente_id){
-            const validatedUuid = idSchema.parse({id: agente_id});
+            const validatedUuid = errorHandler.idSchema.parse({id: agente_id});
             const agenteExists = agentesRepository.findById(validatedUuid.id);
             const casos = casosRepository.findByAgente(agenteExists.id);
             if(casos){
@@ -77,7 +76,7 @@ function getAgenteDataByCasoId(req, res, next){
     const { caso_id } = req.params;
     let validCasoId;
     try {
-        validCasoId = idSchema.parse({ id: caso_id });
+        validCasoId = errorHandler.idSchema.parse({ id: caso_id });
     } catch(error) {
         return next(new ApiError(error.message, 400));
     }
@@ -116,7 +115,7 @@ function getAgenteDataByCasoId(req, res, next){
 function getCasoById(req, res, next) {
     let id;
     try {
-        ({id} = idSchema.parse(req.params));
+        ({id} = errorHandler.idSchema.parse(req.params));
     } catch(error) {
         return next(new ApiError(error.message, 404));
     }
@@ -133,7 +132,7 @@ function getCasoById(req, res, next) {
 function createCaso(req, res, next){
     let dados;
     try {
-        dados = casoSchema.parse(req.body);
+        dados = errorHandler.casoSchema.parse(req.body);
     } catch(error) {
         return next(new ApiError(error.message, 400));
     }
@@ -153,7 +152,7 @@ function createCaso(req, res, next){
 function deleteCasoById(req, res, next){
     let id;
     try {
-        ({id} = idSchema.parse(req.params));
+        ({id} = errorHandler.idSchema.parse(req.params));
     } catch(error) {
         return next(new ApiError(error.message, 404));
     }
@@ -169,12 +168,12 @@ function deleteCasoById(req, res, next){
 function editCaso(req, res, next) {
     let id, dados;
     try{
-        ({id} = idSchema.parse(req.params));
+        ({id} = errorHandler.idSchema.parse(req.params));
     } catch(error) {
         return next(new ApiError(error.message, 404));
     }
     try {
-        dados = casoSchema.parse(req.body);
+        dados = errorHandler.casoSchema.parse(req.body);
     } catch(error) {
         return next(new ApiError(error.message, 400));
     }
@@ -192,13 +191,13 @@ function editCasoProperty(req, res, next){
     let id, dados;
     
     try {
-        ({id} = idSchema.parse(req.params));
+        ({id} = errorHandler.idSchema.parse(req.params));
     } catch(error) {
         return next(new ApiError(error.message, 404));
     }
     
     try {
-        dados = partialCasoSchema.parse(req.body);
+        dados = errorHandler.partialCasoSchema.parse(req.body);
     } catch(error) {
         return next(new ApiError(error.message, 400));
     }
