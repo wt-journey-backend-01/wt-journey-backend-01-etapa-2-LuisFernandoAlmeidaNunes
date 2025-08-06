@@ -1,10 +1,7 @@
 const { z } = require('zod');
 
 const idSchema = z.object({
-    id: z.uuidv4({
-        required_error: 'Uuid é obrigatório',
-        invalid_type_error: 'O id deve seguir a formatação uuid' 
-    })
+  id: z.string().uuid()
 });
 
 const casoSchema = z.object({

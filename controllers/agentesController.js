@@ -24,10 +24,15 @@ function getAgenteById(req, res, next) {
     let id;
     try {
         ({id} = idSchema.parse(req.params));
-    const agente = agentesRepository.findById(id);    
-    return res.status(200).json({message: "Agente encontrado com sucesso !", agente: agente});
     } catch(error) {
-        next(new ApiError(error.message, 404));
+        return next(new ApiError(error.message, 400)); // erro de validação
+    }
+
+    try {
+        const agente = agentesRepository.findById(id);
+        return res.status(200).json({message: "Agente encontrado com sucesso !", agente: agente});
+    } catch(error) {
+        return next(new ApiError(error.message, 404)); // não encontrado
     }
 }
 

@@ -22,15 +22,15 @@ function getAllCasos(req, res, next) {
         if(agente_id){
             const validatedUuid = idSchema.parse({id: agente_id});
             const agenteExists = agentesRepository.findById(validatedUuid.id);
-            const caso = casosRepository.findByAgente(agenteExists.id);
-            if(caso){
-                return res.status(200).json({caso: caso});
+            const casos = casosRepository.findByAgente(agenteExists.id);
+            if(casos){
+                return res.status(200).json({casos: casos});
             }
         }
         
         if(status){
             if(status === "aberto" || status === "solucionado" ){
-                const casosAbertos = casosRepository.findAberto(casos);    
+                casos = casos.filter(caso => caso.status === status);
             } else {
                 return next(new ApiError('Apenas é possível pesquisar por "aberto" ou "solucionado"', 400));
             }
@@ -74,29 +74,27 @@ function getCasosByWord(req, res, next){
 // }
 
 function getAgenteDataByCasoId(req, res, next){
-
-    const {caso_id} = req.params;
-
-    console.log(caso_id);
-    const validCaso_id = idSchema.parse({id: caso_id});
-
-    if(!validCaso_id){
-        return next(new ApiError(error.message, 404));
+    const { caso_id } = req.params;
+    let validCasoId;
+    try {
+        validCasoId = idSchema.parse({ id: caso_id });
+    } catch(error) {
+        return next(new ApiError(error.message, 400));
     }
 
+    let caso;
     try {
-        const caso = casosRepository.findById(validCaso_id.id);
-    }  catch(error) {
-        return next(new ApiError(error.message, 404));
-    }
-
-    try {
-        agente = agentesRepository.findById(caso.agente_id);
-        return res.status(200).json({agente: agente});
+        caso = casosRepository.findById(validCasoId.id);
     } catch(error) {
         return next(new ApiError(error.message, 404));
     }
 
+    try {
+        const agente = agentesRepository.findById(caso.agente_id);
+        return res.status(200).json({ agente });
+    } catch(error) {
+        return next(new ApiError(error.message, 404));
+    }
 }
 
 // function getCasoAberto(status, casos, res, next){
