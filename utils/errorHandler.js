@@ -22,7 +22,7 @@ const agenteSchema = z.object({
         required_error: 'Cargo é obrigatório.',
         invalid_type_error: 'Cargo deve ser "inspetor" ou "delegado".'
     }),
-});
+});     
 
 const partialAgenteSchema = agenteSchema.partial();
 
