@@ -1,251 +1,308 @@
 <sup>Esse é um feedback gerado por IA, ele pode conter erros.</sup>
 
-Você tem 4 créditos restantes para usar o sistema de feedback AI.
+Você tem 9 créditos restantes para usar o sistema de feedback AI.
 
 # Feedback para LuisFernandoAlmeidaNunes:
 
-Nota final: **26.1/100**
+Nota final: **31.1/100**
 
-# Feedback para LuisFernandoAlmeidaNunes 🚔✨
+Olá, LuisFernandoAlmeidaNunes! 👋🚀
 
-Olá Luis! Primeiro, parabéns por todo o esforço que você colocou nesse desafio de API para o Departamento de Polícia! 🎉 Construir uma API RESTful com Node.js e Express não é trivial, e já vi muitas coisas muito boas no seu código. Você estruturou seu projeto em módulos (rotas, controllers, repositories), usou validação com Zod, criou middlewares de erro personalizados... Isso mostra que você está no caminho certo para se tornar um desenvolvedor backend muito competente! 👏
-
----
-
-## O que você mandou muito bem! 🌟
-
-- **Organização modular:** Você separou muito bem as rotas (`routes`), controladores (`controllers`) e repositórios (`repositories`), exatamente como a arquitetura esperada. Isso facilita a manutenção e escalabilidade do projeto.
-- **Uso do Express Router:** Nos arquivos `routes/agentesRoutes.js` e `routes/casosRoutes.js`, você configurou as rotas com clareza e usou os controllers para delegar as responsabilidades. Excelente!
-- **Validação com Zod:** Vejo que você está usando schemas para validar dados de entrada, o que é uma ótima prática para garantir a integridade dos dados.
-- **Tratamento de erros:** Implementou a classe `ApiError` e usou a função `next()` para encaminhar erros para o middleware de tratamento, isso é fundamental para uma API robusta.
-- **Implementação dos endpoints básicos:** Você criou praticamente todos os endpoints para agentes e casos, cobrindo GET, POST, PUT, PATCH e DELETE.
-- **Testes bônus parcialmente entregues:** Você já começou a implementar filtros e buscas por palavra, o que é um plus para a API.
+Primeiramente, parabéns pelo esforço e por entregar uma API com vários endpoints implementados! 🎉 Você estruturou seu projeto com as pastas de controllers, repositories, routes e utils, o que já mostra uma boa organização e entendimento da arquitetura modular. Além disso, você já conseguiu implementar validações usando o Zod e tratamento de erros personalizado com uma classe ApiError, o que é um ótimo passo para construir APIs robustas! 👏
 
 ---
 
-## Pontos que precisam de atenção para destravar seu projeto 💡
-
-### 1. **Problemas com a validação e uso dos IDs UUID**
-
-Você recebeu uma penalidade e eu também percebi no seu código que o ID utilizado para agentes e casos não está sendo tratado corretamente como UUID.
-
-Por exemplo, no seu `agentesRepository.js`, o método `deleteById` está assim:
-
-```js
-function deleteById(id) {
-  const index = agentes.findIndex(agente => agente.id === id);
-
-  if (index === -1) {
-    agente = agentes.splice(index, 1);
-    return agente;
-  }
-  
-  throw new Error(`Id ${id} não encontrado !`);
-}
-```
-
-Aqui tem um problema lógico: você está verificando se `index === -1` e, se for verdade, tenta remover o agente no índice `-1`, o que não faz sentido e pode causar erros. O correto seria:
-
-```js
-function deleteById(id) {
-  const index = agentes.findIndex(agente => agente.id === id);
-
-  if (index !== -1) {
-    const agente = agentes.splice(index, 1);
-    return agente;
-  }
-  
-  throw new Error(`Id ${id} não encontrado !`);
-}
-```
-
-Esse erro faz com que a deleção nunca aconteça e o erro seja lançado indevidamente. Isso impacta vários endpoints que dependem da exclusão.
-
-Além disso, em vários lugares você lança erros com mensagens genéricas, mas não está validando se o ID recebido é um UUID válido antes de buscar no array. Isso pode levar a erros inesperados.
-
-**Recomendo fortemente que você revise como está validando os IDs UUID com o Zod, e garanta que todos os métodos que recebem IDs façam essa validação antes de buscar ou manipular dados.**
-
-👉 Para entender melhor como validar UUIDs e tratar erros HTTP 400 e 404, veja este recurso:  
-https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Status/400  
-https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Status/404  
-E para validação com Zod: https://youtu.be/yNDCRAz7CM8?si=Lh5u3j27j_a4w3A_
+## Vamos juntos destrinchar o que está funcionando bem e onde podemos melhorar para deixar sua API tinindo! 🕵️‍♂️✨
 
 ---
 
-### 2. **Erro fundamental no método `deleteById` do agentesRepository:**
+### ✅ Pontos Fortes que Vi no Seu Código
 
-Como mostrei acima, o método está com a lógica invertida para encontrar o índice e remover o agente. Isso faz com que o método não funcione, causando falha em várias operações de DELETE e atualizações que dependem da remoção correta.
+- **Arquitetura modular**: Você separou muito bem as rotas (`routes/`), controladores (`controllers/`) e repositórios (`repositories/`), seguindo a estrutura esperada. Isso facilita manutenção e escalabilidade.
 
-Esse é um erro que impacta diretamente o funcionamento dos endpoints de exclusão e atualização, e consequentemente vários testes e funcionalidades que dependem disso.
+- **Validação de dados**: O uso do Zod para validar entradas (`agenteSchema`, `casoSchema`, `idSchema` etc.) está bem aplicado, garantindo que o payload tenha o formato esperado antes de tentar criar ou editar dados.
 
----
+- **Tratamento de erros com classe customizada**: A ApiError é uma ótima ideia para padronizar o tratamento e os status HTTP, e você a usou em vários lugares para enviar respostas apropriadas.
 
-### 3. **Falta de validação adequada para existência do agente em `createCaso`**
+- **Implementação dos endpoints básicos**: Você implementou todos os métodos HTTP para `/agentes` e `/casos`, incluindo GET, POST, PUT, PATCH e DELETE.
 
-No `controllers/casosController.js`, quando você cria um novo caso, você tenta validar se o agente existe assim:
-
-```js
-try{
-    const agenteExiste = agentesRepository.findById(dados.agente_id);
-} catch(error) {
-    return next(new ApiError(error.message, 404));
-}
-```
-
-Mas, se o agente não existir, o método `findById` lança um erro, que você captura, mas não está tratando esse erro com clareza. Além disso, você não está interrompendo o fluxo depois do erro, o que pode levar a criar casos com agentes inválidos.
-
-Seria melhor validar explicitamente e retornar um erro 404 se o agente não existir, para evitar inconsistências:
-
-```js
-try {
-    agentesRepository.findById(dados.agente_id);
-} catch (error) {
-    return next(new ApiError(`Agente com id ${dados.agente_id} não encontrado`, 404));
-}
-```
-
-Isso garante que você só cria casos para agentes válidos.
+- **Testes bônus parcialmente atendidos**: Apesar de algumas falhas, você tentou implementar filtros, buscas por palavra-chave, e o endpoint para buscar agente pelo caso, mostrando que está buscando ir além do básico! 💪
 
 ---
 
-### 4. **Endpoint de filtro por status e agente_id no `getAllCasos`**
+### 🔍 Onde Identifiquei Oportunidades de Melhoria (Vamos ao que interessa!)
 
-No método `getAllCasos` você tenta implementar filtros por query params `agente_id` e `status`. No entanto, a lógica está um pouco confusa e pode levar a erros:
+---
+
+#### 1. **Filtros e buscas nos endpoints `/casos` e `/agentes` não estão funcionando corretamente**
+
+Você implementou filtros para buscar casos por `agente_id` e `status` no `getAllCasos` (controllers/casosController.js), mas eles não retornam os dados como esperado. Por exemplo, veja este trecho:
 
 ```js
 if(agente_id){
     const validatedUuid = idSchema.parse({id: agente_id});
-    return getCasoByAgente(validatedUuid.id,res,next);
+    const agenteExists = agentesRepository.findById(validatedUuid.id);
+    const caso = casosRepository.findByAgente(agenteExists.id);
+    if(caso){
+        return res.status(200).json({caso: caso});
+    }
+}
+```
+
+**Problemas aqui:**
+
+- Se o filtro de `agente_id` for usado, você retorna logo no meio da função, mas não atualiza a variável `casos` para continuar o fluxo. Isso pode gerar inconsistência.
+
+- O JSON retornado usa `{ caso: caso }`, mas o esperado geralmente é uma lista, então o nome no plural `{ casos: casos }` é mais apropriado.
+
+- Similarmente, para o filtro `status`, você cria `casosAbertos` mas não usa o resultado para responder:
+
+```js
+if(status){
+    if(status === "aberto" || status === "solucionado" ){
+        const casosAbertos = casosRepository.findAberto(casos);    
+    } else {
+        return next(new ApiError('Apenas é possível pesquisar por "aberto" ou "solucionado"', 400));
+    }
+}
+```
+
+Aqui, você filtra, mas não retorna nada com o resultado.
+
+**Como melhorar?** Você pode fazer algo assim:
+
+```js
+let casos = casosRepository.findAll();
+
+if(agente_id){
+    const validatedUuid = idSchema.parse({id: agente_id});
+    agentesRepository.findById(validatedUuid.id); // só para validar existência
+    casos = casos.filter(caso => caso.agente_id === validatedUuid.id);
+}
+
+if(status){
+    if(status === "aberto" || status === "solucionado" ){
+        casos = casos.filter(caso => caso.status === status);
+    } else {
+        return next(new ApiError('Apenas é possível pesquisar por "aberto" ou "solucionado"', 400));
+    }
+}
+
+return res.status(200).json({ casos });
+```
+
+Assim, você aplica os filtros e retorna a lista filtrada corretamente.
+
+---
+
+#### 2. **Endpoint para buscar agente pelo caso (`/casos/:caso_id/agente`) tem problemas de fluxo e validação**
+
+No método `getAgenteDataByCasoId` você faz:
+
+```js
+const validCaso_id = idSchema.parse({id: caso_id});
+
+if(!validCaso_id){
+    return next(new ApiError(error.message, 404));
 }
 
 try {
-    const casos = casosRepository.findAll();
+    const caso = casosRepository.findById(validCaso_id.id);
+}  catch(error) {
+    return next(new ApiError(error.message, 404));
+}
 
-    if(status){
-        return getCasoAberto(status, casos, res, next);
-    }
-
-    return res.status(200).json(casos);
-
+try {
+    agente = agentesRepository.findById(caso.agente_id);
+    return res.status(200).json({agente: agente});
 } catch(error) {
     return next(new ApiError(error.message, 404));
 }
 ```
 
-Aqui, se `agente_id` existir, você chama `getCasoByAgente` diretamente, mas não está validando se o agente existe antes, nem tratando possíveis erros de validação.
+**Problemas aqui:**
 
-Além disso, o filtro por status só aceita o valor `"aberto"`, e caso contrário lança erro. Isso limita muito a API e pode gerar rejeições desnecessárias.
+- Você tenta validar o ID e, se não for válido, usa `error.message` que não está definido nesse escopo, causando erro.
 
-Sugestão: separar melhor as responsabilidades, validar os parâmetros e retornar respostas consistentes, por exemplo:
+- O `const caso` está declarado dentro do bloco `try`, mas fora do bloco onde você usa `caso.agente_id`, o `caso` não existe (escopo).
+
+- A variável `agente` não foi declarada com `const` ou `let`, o que pode gerar problemas.
+
+**Como corrigir:**
+
+```js
+function getAgenteDataByCasoId(req, res, next){
+    const { caso_id } = req.params;
+    let validCasoId;
+    try {
+        validCasoId = idSchema.parse({ id: caso_id });
+    } catch(error) {
+        return next(new ApiError(error.message, 400));
+    }
+
+    let caso;
+    try {
+        caso = casosRepository.findById(validCasoId.id);
+    } catch(error) {
+        return next(new ApiError(error.message, 404));
+    }
+
+    try {
+        const agente = agentesRepository.findById(caso.agente_id);
+        return res.status(200).json({ agente });
+    } catch(error) {
+        return next(new ApiError(error.message, 404));
+    }
+}
+```
+
+Note que agora o fluxo está claro, as variáveis estão declaradas no escopo certo, e o erro de validação usa status 400 (bad request) — mais apropriado para erro de formato de ID.
+
+---
+
+#### 3. **Validação e uso dos IDs UUID**
+
+Você recebeu penalidades porque o ID usado para agentes e casos não é UUID válido. Isso é importante para garantir que o sistema só aceite IDs no formato correto.
+
+No seu código, você usa `crypto.randomUUID()` para gerar IDs, o que é ótimo. Porém, no momento de validar os IDs recebidos em parâmetros, você usa o `idSchema` do Zod, mas não vi o schema completo para validar UUIDs.
+
+**Sugestão:** Certifique-se que seu `idSchema` valida o formato UUID corretamente, por exemplo:
+
+```js
+const idSchema = z.object({
+  id: z.string().uuid()
+});
+```
+
+Se o schema não estiver assim, os IDs inválidos podem passar e causar erros difíceis de rastrear.
+
+---
+
+#### 4. **Tratamento dos erros e status HTTP**
+
+Você está usando a classe `ApiError` para enviar erros, o que é ótimo! Porém, em alguns pontos você usa status 404 para erros de validação (exemplo: payload mal formatado), quando o correto seria 400 (Bad Request).
+
+Por exemplo, no `createAgente`:
 
 ```js
 try {
-    let casos = casosRepository.findAll();
-
-    if (agente_id) {
-        idSchema.parse({ id: agente_id }); // valida UUID
-        casos = casos.filter(caso => caso.agente_id === agente_id);
-    }
-
-    if (status) {
-        if (status !== "aberto") {
-            return next(new ApiError('O filtro deve ocorrer por "aberto"', 400));
-        }
-        casos = casos.filter(caso => caso.status === "aberto");
-    }
-
-    return res.status(200).json(casos);
-} catch (error) {
+    agenteData = agenteSchema.parse(req.body); 
+} catch(error) {
     return next(new ApiError(error.message, 400));
 }
 ```
 
-Assim, o filtro é mais flexível e consistente.
-
----
-
-### 5. **Pequenos erros de escopo e declaração de variáveis**
-
-Em vários lugares do seu código, você usa variáveis sem declarar com `let` ou `const`, por exemplo:
+Aqui está correto, mas em outras funções, como `getAgenteById`, você usa:
 
 ```js
-agente = {};
-```
-
-ou
-
-```js
-caso = {};
-```
-
-Isso pode causar bugs difíceis de detectar, pois a variável vira global. Sempre declare suas variáveis com `const` ou `let` para garantir o escopo correto.
-
----
-
-### 6. **Erro na função `deleteById` do `casosRepository`**
-
-No seu `casosRepository.js`, você tem:
-
-```js
-function deleteById(id) {
-    const index = casos.findIndex(caso => caso.id === id);
-
-    if (index !== -1) {
-        casos.splice(index, 1);
-        return;
-    }
-    
-    throw new Error(`Id ${id} não encontrado !`);;
+try {
+    ({id} = idSchema.parse(req.params));
+    const agente = agentesRepository.findById(id);    
+    return res.status(200).json({message: "Agente encontrado com sucesso !", agente: agente});
+} catch(error) {
+    next(new ApiError(error.message, 404));
 }
 ```
 
-Aqui está correto! Mas no `agentesRepository.js` estava invertido, então fique atento para manter a consistência.
+Se o erro for na validação do ID (formato errado), o status deveria ser 400. Se o erro for porque o agente não existe, aí sim 404.
+
+Você pode melhorar diferenciando os erros, por exemplo:
+
+```js
+try {
+    ({id} = idSchema.parse(req.params));
+} catch(error) {
+    return next(new ApiError(error.message, 400)); // erro de validação
+}
+
+try {
+    const agente = agentesRepository.findById(id);
+    return res.status(200).json({message: "Agente encontrado com sucesso !", agente: agente});
+} catch(error) {
+    return next(new ApiError(error.message, 404)); // não encontrado
+}
+```
+
+Isso deixa a API mais clara para quem consome.
 
 ---
 
-### 7. **Falta de implementação correta dos filtros e ordenações bônus**
+#### 5. **Resposta consistente e nomenclatura dos objetos retornados**
 
-Você tentou implementar filtros por status, agente e busca por palavra, mas a lógica ainda não está 100% correta, o que impede o funcionamento completo desses recursos bônus.
+Em vários endpoints você retorna o objeto diretamente, em outros você embrulha em um objeto com chave no singular ou plural, por exemplo:
 
-Além disso, não vi implementação de ordenação por data de incorporação, que era um dos bônus esperados.
+```js
+return res.status(200).json({agentes: agentes});
+```
+
+vs
+
+```js
+return res.status(200).json(casos);
+```
+
+Para manter a consistência, recomendo sempre retornar um objeto com a chave no plural para listas, e no singular para um único recurso, assim:
+
+- Para lista: `{ agentes: [...] }` ou `{ casos: [...] }`
+- Para único item: `{ agente: {...} }` ou `{ caso: {...} }`
+
+Isso ajuda o cliente da API a entender o formato da resposta.
 
 ---
 
-## Recomendações de estudos para avançar 🚀
+#### 6. **Filtros e ordenações bônus não implementados**
 
-- Para entender melhor a estrutura MVC e organização de projetos Node.js, confira:  
+Vi que você tentou implementar filtros simples, como busca por palavra-chave (`getCasosByWord`) e filtro por status, mas a implementação está incompleta ou não retorna corretamente os dados filtrados.
+
+Além disso, os filtros complexos por data de incorporação e ordenação crescente/decrescente em agentes não foram implementados.
+
+Se quiser dar um passo extra, vale a pena estudar sobre ordenação de arrays com `.sort()` e filtros com `.filter()` para melhorar esses pontos.
+
+---
+
+### 📚 Recursos que Recomendo para Você Aprofundar e Corrigir Esses Pontos
+
+- **Arquitetura MVC e organização de rotas**:  
   https://youtu.be/bGN_xNc4A1k?si=Nj38J_8RpgsdQ-QH
 
-- Para aprofundar no uso do Express Router e middlewares:  
-  https://expressjs.com/pt-br/guide/routing.html
+- **Validação de dados com Zod e tratamento de erros**:  
+  https://youtu.be/yNDCRAz7CM8?si=Lh5u3j27j_a4w3A_
 
-- Para validar dados e tratar erros HTTP corretamente, especialmente com Zod:  
-  https://youtu.be/yNDCRAz7CM8?si=Lh5u3j27j_a4w3A_  
+- **Status HTTP 400 e 404 explicados**:  
   https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Status/400  
   https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Status/404
 
-- Para manipulação correta de arrays no JavaScript (findIndex, filter, splice):  
+- **Manipulação de arrays para filtros e ordenação**:  
   https://youtu.be/glSgUKA5LjE?si=t9G2NsC8InYAU9cI
 
----
-
-## Resumo Rápido para Você Focar 🔍
-
-- [ ] Corrija a lógica do método `deleteById` em `agentesRepository` para verificar o índice corretamente antes de remover o agente.
-- [ ] Garanta que todos os IDs recebidos sejam validados como UUID antes de buscar ou manipular dados.
-- [ ] Melhore o tratamento de erros para casos em que agentes ou casos não existam, retornando status 404 com mensagens claras.
-- [ ] Ajuste os filtros no endpoint `/casos` para funcionar corretamente e de forma flexível, validando query params.
-- [ ] Declare todas as variáveis com `const` ou `let` para evitar problemas de escopo.
-- [ ] Continue aprimorando os filtros e ordenações bônus para melhorar a usabilidade da API.
-- [ ] Teste suas rotas manualmente com ferramentas como Postman ou Insomnia para garantir que os status HTTP e respostas estejam corretos.
+- **Express.js roteamento e uso de Router**:  
+  https://expressjs.com/pt-br/guide/routing.html
 
 ---
 
-Luis, você já tem uma base muito sólida e está no caminho certo! Com esses ajustes, sua API vai ficar muito mais robusta e alinhada com as boas práticas. Continue praticando e explorando os conceitos que mencionei, pois a jornada do backend é cheia de aprendizados incríveis! 💪🚀
+### 📝 Resumo Rápido para Você Focar
 
-Se precisar, estou aqui para ajudar a destrinchar qualquer ponto que parecer complicado. Vamos juntos nessa! 😉
+- Corrija a lógica dos filtros no endpoint `/casos` para aplicar os filtros corretamente e retornar a lista filtrada.
 
-Abraços e bons códigos! 👨‍💻✨
+- Ajuste o endpoint `/casos/:caso_id/agente` para validar o ID no escopo correto e tratar erros de forma clara.
+
+- Garanta que o schema de validação do ID esteja validando UUIDs corretamente.
+
+- Diferencie os status 400 (bad request) para erros de validação e 404 (not found) para recursos inexistentes.
+
+- Padronize a estrutura das respostas JSON para manter consistência (usar plural para listas, singular para item único).
+
+- Avance na implementação dos filtros e ordenações bônus para melhorar sua nota e a usabilidade da API.
+
+---
+
+Luis, seu código tem uma base muito boa e com alguns ajustes você vai conseguir fazer sua API funcionar perfeitamente! 🚀 Não desanime, pois esses detalhes são comuns na jornada de aprendizado e corrigindo eles você se tornará cada vez mais confiante.
+
+Continue praticando, revisando seu código com calma e usando os recursos que te recomendei para consolidar seu conhecimento. Você está no caminho certo! 💪✨
+
+Se precisar, estou aqui para ajudar! 👨‍💻👊
+
+Um abraço e bons códigos! 🙌🔥
 
 > Caso queira tirar uma dúvida específica, entre em contato com o Chapter no nosso [discord](https://discord.gg/DryuHVnz).
 
