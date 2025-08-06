@@ -29,7 +29,7 @@ function create(dataAgente){
 
     const {nome, dataDeIncorporacao, cargo} = dataAgente;
 
-    agente = {};
+    const agente = {};
     agente.id = crypto.randomUUID();
     agente.nome = nome;
     agente.dataDeIncorporacao = dataDeIncorporacao;
@@ -84,8 +84,8 @@ function editProperties(id, dataForPatch){
 function deleteById(id) {
   const index = agentes.findIndex(agente => agente.id === id);
 
-  if (index === -1) {
-    agente = agentes.splice(index, 1);
+  if (index !== -1) {
+    const agente = agentes.splice(index, 1);
     return agente;
     }
     

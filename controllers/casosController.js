@@ -16,23 +16,30 @@ function getAllCasos(req, res, next) {
 
     const {agente_id, status} = req.query;
 
-    if(agente_id){
-
-        const validatedUuid = idSchema.parse({id: agente_id});
-        return getCasoByAgente(validatedUuid.id,res,next);
-    }
-    
     try {
-        const casos = casosRepository.findAll();
+        let casos = casosRepository.findAll();
 
+        if(agente_id){
+            const validatedUuid = idSchema.parse({id: agente_id});
+            const agenteExists = agentesRepository.findById(validatedUuid.id);
+            const caso = casosRepository.findByAgente(agenteExists.id);
+            if(caso){
+                return res.status(200).json({caso: caso});
+            }
+        }
+        
         if(status){
-            return getCasoAberto(status, casos, res, next);
+            if(status === "aberto" || status === "solucionado" ){
+                const casosAbertos = casosRepository.findAberto(casos);    
+            } else {
+                return next(new ApiError('Apenas é possível pesquisar por "aberto" ou "solucionado"', 400));
+            }
         }
 
         return res.status(200).json(casos);
-    
+        
     } catch(error) {
-        return next(new ApiError(error.message, 404));
+        return next(new ApiError(error.message, 400));
     }
 }
 
@@ -50,21 +57,21 @@ function getCasosByWord(req, res, next){
     return res.status(200).json({casos: casos});
 }
 
-function getCasoByAgente(id, res, next) {
+// function getCasoByAgente(id, res, next) {
 
-    const agenteExists = agentesRepository.findById(id);
+//     const agenteExists = agentesRepository.findById(id);
 
-    if(!agenteExists){
-        return next(new ApiError(error.message, 404));
-    }
+//     if(!agenteExists){
+//         return next(new ApiError(error.message, 404));
+//     }
 
-    try {
-        const caso = casosRepository.findByAgente(id);
-        return res.status(200).json(caso);
-    } catch(error) {
-        return next(new ApiError(error.message, 404));
-    }
-}
+//     try {
+//         const caso = casosRepository.findByAgente(id);
+//         return res.status(200).json(caso);
+//     } catch(error) {
+//         return next(new ApiError(error.message, 404));
+//     }
+// }
 
 function getAgenteDataByCasoId(req, res, next){
 
@@ -78,7 +85,7 @@ function getAgenteDataByCasoId(req, res, next){
     }
 
     try {
-        caso = casosRepository.findById(validCaso_id.id);
+        const caso = casosRepository.findById(validCaso_id.id);
     }  catch(error) {
         return next(new ApiError(error.message, 404));
     }
@@ -92,21 +99,21 @@ function getAgenteDataByCasoId(req, res, next){
 
 }
 
-function getCasoAberto(status, casos, res, next){
+// function getCasoAberto(status, casos, res, next){
 
-    if (status !== "aberto"){
-        return next(new ApiError('O filtro deve ocorrer por "Aberto"', 400));
-    }
+//     if (status !== "aberto"){
+//         return next(new ApiError('O filtro deve ocorrer por "Aberto"', 400));
+//     }
 
-    if (!Array.isArray(casos)) {
-        throw new Error(error.message, 400);
-    }
+//     if (!Array.isArray(casos)) {
+//         throw new Error(error.message, 400);
+//     }
 
-    const casosAbertos = casosRepository.findAberto(casos);    
+//     const casosAbertos = casosRepository.findAberto(casos);    
 
-    return res.status(200).json(casosAbertos);
+//     return res.status(200).json(casosAbertos);
 
-}
+// }
 
 function getCasoById(req, res, next) {
     let id;
@@ -132,10 +139,10 @@ function createCaso(req, res, next){
     } catch(error) {
         return next(new ApiError(error.message, 400));
     }
-    try{
-        const agenteExiste = agentesRepository.findById(dados.agente_id);
-    } catch(error) {
-        return next(new ApiError(error.message, 404));
+    try {
+        agentesRepository.findById(dados.agente_id);
+    } catch (error) {
+        return next(new ApiError(`Agente com id ${dados.agente_id} não encontrado`, 404));
     }
     try {
         const caso = casosRepository.create(dados);
@@ -175,7 +182,7 @@ function editCaso(req, res, next) {
     }
 
     try {
-    caso = casosRepository.edit(id, dados);
+    const caso = casosRepository.edit(id, dados);
     return res.status(200).json({message: "Caso editado com sucesso !", caso: caso});
     }  catch(error) {
         return next(new ApiError(error.message, 404));
@@ -203,7 +210,7 @@ function editCasoProperty(req, res, next){
     }
 
     try {
-    caso = casosRepository.editProperties(id, dados);
+    const caso = casosRepository.editProperties(id, dados);
 
     return res.status(200).json({message: "Caso atualizado com sucesso !", caso: caso});
     } catch(error) {
@@ -214,9 +221,9 @@ function editCasoProperty(req, res, next){
 module.exports = {
    getAllCasos,
    getCasoById,
-   getCasoByAgente,
+//    getCasoByAgente,
    getAgenteDataByCasoId,
-   getCasoAberto,
+//    getCasoAberto,
    getCasosByWord,
    createCaso,
    deleteCasoById,
